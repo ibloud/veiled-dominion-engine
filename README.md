@@ -1,4 +1,3 @@
-```markdown
 # ♟️ Veiled Dominion - CC BY-NC-SA 4.0
 
 > *"Every game teaches you to become more powerful. What if the lesson was the opposite?"*
