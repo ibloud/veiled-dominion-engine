@@ -1,0 +1,16 @@
+site_name: Veiled Dominion — Docs
+docs_dir: docs
+site_dir: site
+theme:
+  name: material
+
+nav:
+  - Home: Home.md
+  - Quickstart: Quickstart.md
+  - Rules: Rules.md
+  - Design Goals: Design_Goals.md
+  - Architecture: ARCHITECTURE_OVERVIEW.md
+  - Public Domain Design: PUBLIC_DOMAIN_DESIGN.md
+  - Contributing: Contributing.md
+  - Roadmap: Roadmap.md
+  - Current Status: Current_Status.md
