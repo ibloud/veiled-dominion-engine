@@ -139,24 +139,35 @@ Play transitions sequentially clockwise. Each player's turn executes across thre
 This repository serves as the digital prototyping sandbox, system state-machine engine, and foundational transmedia manifest for the *Daddy's Little Mortis* ecosystem.
 
 ```text
-veiled-dominion/
-├── architecture/                 # Physical & Industrial blueprints
-│   └── apparel/
-│       └── source-code/
-│           └── veil-protocol-v0.1.md # SENSORY ARCHITECTURE / FOUNDRY SPECIFICATIONS
-├── assets/                       # Engine-ready production files
-│   ├── audio/                    # Ambient drones & state-change audio cues
-│   └── models/                   # 3D assets (Refractive Rebirth / Void-Shader Death)
-├── docs/                         # Extended universe documentation
-│   ├── open-collective/          # Crowdfunding tiers & backer materials
-│   ├── PITCH_DECK.md             # Premium television packaging outlines
-│   └── QUEENS_JOURNEY.md         # Narrative worldbuilding & core thematic logic
-└── src/                          # Unity (C#) / Unreal (C++) Prototyping Core
-    ├── board/                    # 14x14 cross-grid coordinate systems
-    ├── input/                    # Phase management controllers & UI hooks
-    ├── pieces/                   # Polymorphic base piece classes & locomotion components
-    └── systems/                  # RadiusofRuin.cs, State Machine, and LP tracking engines
+## Repository Architecture
 
+veiled-dominion-engine/
+│
+├── docs/                           # Design, lore, and variant blueprints
+│   ├── design/
+│   │   └── GDD.md                 # Master Game Design Document Index
+│   ├── RULEBOOK_v0.1.md           # Core mechanical rules for the C# engine
+│   ├── FAQ_EDGE_CASES.md          # Logic clarifications
+│   ├── UNITY_INIT.md              # Unity 2022 URP setup & grey-box specs
+│   ├── COMMUNITY.md               # Non-code contribution guidelines
+│   └── variants/                  # Proof-of-concept mechanical stress tests
+│       ├── SYSTEMS_QUARTET_VARIANT.md
+│       ├── DARK_BAUHAUS_VARIANT.md
+│       ├── SICKBOI_VARIANT.md
+│       └── BACK_IN_DERRY_VARIANT.md
+│
+├── Assets/                        # [Unity Project Root - Managed by Engine Lead]
+│   └── _Project/
+│       ├── Scripts/
+│       │   ├── Core/              # BasePiece.cs, GridTopology.cs
+│       │   └── Systems/           # RadiusOfRuin.cs, VeiledStateManager.cs
+│       ├── Prefabs/Pieces/        # Future Grey-box primitives
+│       ├── Materials/Core/         # Musou Black & Rebirth Glow shaders
+│       └── Scenes/                # GreyBox_Test.unity
+│
+├── LICENSE                        # CC BY-NC-SA 4.0
+├── CONTRIBUTING.md                # Strict engineering onboarding rules
+└── README.md                      # You are here
 ```
 
 ---
