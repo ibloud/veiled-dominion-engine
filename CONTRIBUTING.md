@@ -1,219 +1,270 @@
-### **Game Analysis & Contribution Guide: Veiled Dominion Engine**
+# Contributing to Veiled Dominion Engine
 
-# ♟️ Veiled Dominion - Game Analysis & Contribution Guide
+Thank you for helping us build **Veiled Dominion**, the asymmetrical 4-player tactical chess-variant engine. This repository houses the core state machine, spatial mechanics pipelines, and network synchronization layers that power our broader transmedia ecosystem.
 
-## 📋 Executive Summary
-**Veiled Dominion** is an ambitious 4-player, asymmetrical chess variant that introduces a "Restraint Fantasy" mechanic, where one player wins by *not* using their power. The project is currently in the **Prototype Phase**, with detailed design documentation but minimal code implementation 【turn0fetch0】. This document provides a structured analysis of the game's core systems, repository status, and a roadmap for contributors.
+By contributing to this project, you help scale an extensible, decentralized framework for alternative strategy games. Please review this document completely before opening an issue or a pull request.
 
-```mermaid
-mindmap
-  root((Veiled Dominion))
-    Core Concept
-      Asymmetrical 4-Player Chess
-      Restraint Fantasy Mechanic
-      "Daddy's Little Mortis" Universe
-    Key Mechanics
-      Radius of Ruin
-        AoE debuff aura
-        Afflicts all pieces
-      The Veiled State
-        Movement restriction
-        1-round duration
-      Victory Paths
-        Standard Checkmate
-        Leadership Points (Mercy)
-        The Fall (Self-Veiled)
-    Repository Status
-      Phase: Prototype
-      Code: Minimal (HTML only)
-      Documentation: Comprehensive
-    Immediate Needs
-      Prototype Engineer
-        Build grid & core logic
-      Technical Artist
-        Create shaders & VFX
-      Systems Designer
-        Balance economy & LP scaling
+---
+
+## ⚖️ 1. Licensing, IP Protection & Provenance Boundaries
+
+To maintain a healthy open-source ecosystem while strictly protecting the commercial integrity of the broader brand lore, this repository enforces two distinct licensing boundaries:
+
+### A. The Engine Code and Public Assets (`CC BY-NC-SA 4.0`)
+
+All source code, public-domain design documentation, configuration tooling, and core state machine files in this repository are licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International** license.
+
+* **What this means for you:** You are completely free to share, copy, remix, transform, and build upon these engine frameworks for *non-commercial* purposes, provided you give appropriate credit and distribute your contributions under this exact same license.
+* **Commercial Exclusion:** You may *not* use this material for commercial advantage or monetary compensation without explicit written permission from Loptr Lab.
+* **Full License Text:** See [`LICENSE.md`](./LICENSE.md) in the repository root.
+
+### B. Commercial Brand Core & Intellectual Property Restrictions
+
+The core narrative IP, specific fictional characters, visual world-building assets, and titles linked to the **Daddy's Little Mortis** digital ecosystem (including but not limited to the manga *The Diary of Death's Daughter* and the *Source Code* apparel collection) are explicitly excluded from this open-source grant.
+
+* **Scope:** Contributors may write open-source variant logic using generic or public-domain motifs, but must *never* commit proprietary assets or commercial brand artwork into this public engine repository.
+* **Enforcement:** Any pull request detected introducing commercial brand IP will be immediately rejected with a detailed explanation, and the contributor will be encouraged to apply to our design team directly at **questions@loptrlab.com**.
+
+### C. Public Domain Literary Provenance Guardrails
+
+When contributing code comments, thematic variables, or rulesets derived from historical literature or philosophical texts (e.g., Seneca, Epicurus, Poe), you must confirm clean provenance to avoid copyright risk.
+
+* **Rule:** Every pull request introducing literary citations must include a stable public-domain source archive link (e.g., Project Gutenberg, Internet Archive).
+* **Forbidden:** Modern copyrighted translations are strictly forbidden; only original texts or verifiably open public-domain translations may be used.
+* **Example Format:** 
+  ```csharp
+  // "On the Nature of Restraint" — Seneca
+  // Source: https://www.gutenberg.org/ebooks/3793
+  public const string RestraintPhilosophy = "...";
+  ```
+
+---
+
+## 🏗️ 2. Development Environment Setup
+
+### Quick Start (Recommended)
+
+We've automated the entire development environment using **Dev Containers** and **GitHub Codespaces**. No local installation required.
+
+#### Option A: GitHub Codespaces (Cloud-Based, Zero Setup)
+1. Click the green **Code** button on the repository page.
+2. Select the **Codespaces** tab.
+3. Click **Create codespace on main**.
+4. The environment boots automatically with .NET 8, Node.js, and all extensions pre-installed.
+
+#### Option B: Local Dev Container (VS Code)
+1. Clone the repository: `git clone https://github.com/Loptr-Lab/veiled-dominion-engine.git`
+2. Open in VS Code: `code .`
+3. When prompted, click **Reopen in Container**.
+4. Wait 3-5 minutes for the first-time build (subsequent launches are instant).
+
+#### Environment Verification
+Once your sandbox is ready, run:
+```bash
+dotnet --version    # Should output 8.0.x
+node --version      # Should output 20.x
+dotnet restore
+dotnet test
 ```
 
-## 🎯 Game Overview
+For detailed environment documentation, see [`docs/DEVELOPMENT_ENVIRONMENT.md`](./docs/DEVELOPMENT_ENVIRONMENT.md).
 
-### **Core Thesis & Innovation**
-The game subverts the traditional power fantasy by creating a "Restraint Fantasy" 【turn0fetch0】:
-- **Traditional Model**: Start weak → Gain power → Win by dominance
-- **Veiled Dominion Model**: Start overpowered → Win by not using power → The board is your victim, not your enemy
+---
 
-This creates a unique psychological tension where the most powerful player must exercise restraint to win, while other players must survive or exploit her mistakes.
+## 🎯 3. Core Architectural Principles
 
-### **Asymmetrical Faction Design**
-| Faction | Role | Unique Challenge |
-|---------|------|------------------|
-| **Rebirth** | Overpowered learner | Must master restraint and earn Leadership Points through merciful maneuvers |
-| **Mortal Factions (x3)** | Survivalists | Must cooperate or compete to survive Rebirth's aura or checkmate her |
+### The Movement Calculation Loop
 
-## ⚙️ Core Mechanics Analysis
-
-### **The Radius of Ruin (AoE System)**
-This is the game's signature mechanic and primary technical challenge for implementation.
-- **Trigger**: Rebirth emits a 1-square aura (8 adjacent squares) 【turn0fetch0】
-- **Effect**: Any piece (friendly or enemy, except Death/Rebirth) ending its turn within this radius enters the **Veiled** state
-- **Strategic Depth**: Rebirth can accidentally suppress her own allies, creating internal conflict
-
-### **The Veiled State (Debuff System)**
-A state machine that restricts piece capabilities:
-```mermaid
-stateDiagram-v2
-    [*] --> Normal
-    Normal --> Veiled: Ends turn in Radius
-    Veiled --> Normal: Start of owner's next turn
-    state Veiled {
-        [*] --> Restricted
-        Restricted --> Move1Square
-        Move1Square --> CannotCapture
-    }
-```
-- **Duration**: Exactly 1 full round 【turn0fetch0】
-- **Effects**: Loses all special movement, can only move 1 square forward, cannot capture
-- **Technical Note**: Does not stack; entering the radius refreshes duration
-
-### **Victory Condition Matrix**
-The game features three distinct end-states, requiring careful balance:
-
-| Victory Type | Achieved By | Technical Implementation Priority |
-|--------------|-------------|-----------------------------------|
-| **Standard Checkmate** | Any player's Leader is checkmated | High (Core chess logic) |
-| **Rebirth Wins (Leadership/Mercy)** | Rebirth accumulates 10 Leadership Points through: Withdrawal, Shielding, Coexistence | Medium (LP tracking system) |
-| **Mortals Win (The Fall)** | Rebirth accidentally "Veils" 5 of her own pieces | High (State tracking & counter) |
-
-## 🏗️ Repository Structure & Technical Assessment
-
-### **Current Implementation Status**
-```
-/veiled-dominion (Current State)
-├── /docs (Empty - Planned)
-│   ├── QUEENS_JOURNEY.md (Planned)
-│   └── PITCH_DECK.md (Planned)
-├── /src (Empty - Planned)
-│   ├── /board (14x14 cross-grid topology)
-│   ├── /pieces (Base piece classes)
-│   ├── /systems (Radius of Ruin, Veil state machine)
-│   └── /input (Turn phase management)
-├── /assets (Empty - Planned)
-│   ├── /models (3D models, shaders)
-│   └── /audio (Ambient SFX, cues)
-├── index.html (Only actual code file)
-├── README.md (Comprehensive design doc)
-└── LICENSE.md (CC BY-NC-SA 4.0)
-```
-
-### **Technical Debt & Challenges**
-1. **Grid Topology**: 14×14 cross-shaped grid with 2×2 neutral center requires custom coordinate logic
-2. **AoE Calculations**: Radius of Ruin needs efficient spatial querying for 4 players
-3. **State Synchronization**: Asynchronous 4-player turn structure with persistent states (Veiled, LP counters)
-4. **Shader Requirements**: Death (light absorption/void) and Rebirth (internal refraction/glow) need custom shaders
-
-## 🤝 Contribution Roadmap
-
-### **Immediate Priority Areas**
-<details>
-<summary>🔧 Technical Implementation Phases</summary>
-
-#### **Phase 1: Core Prototype (2-3 months)**
-- [ ] Implement 14×14 cross-shaped grid with coordinate system
-- [ ] Create base piece classes with locomotion rules
-- [ ] Develop `RadiusOfRuin.cs` state machine
-- [ ] Basic turn structure loop for 4 players
-- [ ] Simple UI for piece selection and movement validation
-
-#### **Phase 2: Systems Integration (3-4 months)**
-- [ ] Implement Veiled state system with duration tracking
-- [ ] Leadership Point (LP) tracking and accumulation logic
-- [ ] Martyr's Boon economy system
-- [ ] Victory condition evaluation for all three paths
-- [ ] Basic AI for testing (optional but recommended)
-
-#### **Phase 3: Visual & Audio Polish (2-3 months)**
-- [ ] Death shader (light absorption/Musou Black effect)
-- [ ] Rebirth shader (translucent/internal refraction)
-- [ ] Ambient audio system for state changes
-- [ ] VFX for Radius of Ruin visualization
-- [ ] 3D model integration for all pieces
-</details>
-
-### **Skill Requirements by Task**
-| Role | Key Skills | Estimated Effort | Priority |
-|------|------------|------------------|----------|
-| **Prototype Engineer** | C#/C++, spatial algorithms, state machines, multiplayer networking | 200-300 hours | Critical |
-| **Technical Artist** | Shader programming (HLSL/GLSL), 3D modeling, VFX systems | 100-150 hours | High |
-| **Systems Designer** | Game balancing, economy design, mathematical modeling, testing | 80-120 hours | Medium |
-| **UI/UX Developer** | Unity/Unreal UI, 4-player interface design, accessibility | 60-80 hours | Medium |
-
-## 📁 Recommended Documentation Structure
-Based on best practices for game repositories 【turn0search2】【turn0search3】【turn0search11】, create the following documentation hierarchy:
+All piece locomotion must respect the canonical **Movement Calculation Pipeline**. Never hardcode valid moves directly. Instead, ensure all spatial navigation arrays pass through this strict sequence:
 
 ```
-/docs
-├── /design
-│   ├── GDD.md (Game Design Document - this analysis)
-│   ├── MECHANICS.md (Detailed mechanical breakdowns)
-│   ├── BALANCE.md (Economy balancing notes and simulations)
-│   └── WORLD_LORE.md (Thematic elements from QUEENS_JOURNEY.md)
-├── /technical
-│   ├── ARCHITECTURE.md (System design and data flow)
-│   ├── API.md (If exposing any interfaces)
-│   └── PERFORMANCE.md (Optimization considerations)
-├── /art
-│   ├── STYLE_GUIDE.md (Visual consistency guidelines)
-│   ├── SHADER_SPECS.md (Technical requirements for shaders)
-│   └── ASSET_LIST.md (Required 3D models, textures, audio)
-├── /contributing
-│   ├── ONBOARDING.md (Step-by-step setup guide)
-│   ├── WORKFLOW.md (Branching strategy, PR process)
-│   └── STANDARDS.md (Code style, naming conventions)
-└── /marketing
-    ├── PITCH_DECK.md (For investors/publishers)
-    ├── PRESS_KIT.md (For media/coverage)
-    └── ROADMAP.md (Public development timeline)
+1. Calculate Base Movement Vectors
+   ↓ (Apply piece's inherent movement rules)
+   ↓
+2. Evaluate Spatial State Modifiers
+   ↓ (Check for `Veiled` debuff, sanctuaries, etc.)
+   ↓
+3. Apply Resource/Aura Overrides
+   ↓ (e.g., `Radius of Ruin` field, `Soul Reservoir` upgrades)
+   ↓
+4. Return Validated Coordinate Set
+   ↓ (Filter illegal moves before UI presentation)
 ```
 
-### **For Potential Contributors:**
-1. **Fork the repository** and create feature branches
-2. **Start with Phase 1 tasks** (grid implementation, basic movement)
-3. **Use the Discord/Matrix channels** mentioned in search results for real-time collaboration 【turn0search1】
-4. **Document all mechanical changes** in this GDD first (as per contribution guidelines)
-5. **Include portfolio links** when applying via email (questions@loptrlab.com)
+### The Veiled State Machine
 
-## 📊 Success Metrics & Next Steps
+The `Veiled` status must be managed through a strict lifecycle:
 
-### **Prototype Success Criteria:**
-- [ ] 4 players can connect and play asynchronously
-- [ ] All core mechanics (Radius, Veiled, LP) function correctly
-- [ ] Victory conditions trigger properly for all three paths
-- [ ] Basic UI provides necessary game state information
-- [ ] Performance remains stable with all pieces on board
+- **Trigger:** Piece ends turn within 1 square of Rebirth
+- **Duration:** Exactly 1 full round (cleared at start of owner's next turn)
+- **Effect:** Movement restricted to 1 square forward, no captures allowed
+- **Stacking:** Duration refreshes (does not stack) if re-entered
 
-### **Post-Prototype Goals:**
-1. **Playtest with 4 players** to balance LP economy
-2. **Iterate on shader effects** for Death and Rebirth
-3. **Develop AI opponents** for solo testing
-4. **Create physical prototype** for tabletop testing
-5. **Prepare pitch materials** for potential funding/publishing
+### Radius of Ruin AoE Calculations
 
-#### **Supporting Documentation:**
+The `RadiusOfRuin` system is the game's primary technical challenge. When implementing:
+
+1. Use efficient spatial indexing (quadtree or grid-based lookup).
+2. Evaluate all 8 adjacent squares to Rebirth's position each turn.
+3. Apply state changes atomically at phase resolution time (not during player input).
+4. Log all Veil applications for "The Fall" counter tracking.
+
+For detailed architectural guidance, see [`README.md`](./README.md) and [`docs/DEVELOPMENT_ENVIRONMENT.md`](./docs/DEVELOPMENT_ENVIRONMENT.md).
+
+---
+
+## 🛠️ 4. Pull Request Submission Workflow
+
+### Pre-Submission Checklist
+
+Before opening a pull request, ensure every item is satisfied:
+
+- [ ] **Branch Naming:** Follows semantic convention
+  - Features: `feature/descriptive-name`
+  - Bugfixes: `bugfix/issue-number-short-name`
+  - Hotfixes: `hotfix/critical-issue`
+  
+- [ ] **Code Compiles:** `dotnet build` returns zero errors inside the devcontainer
+
+- [ ] **Tests Pass:** `dotnet test` returns 100% pass rate
+  - New piece mechanics require corresponding unit test blocks
+  - Edge cases (e.g., Veil stacking, Dash interactions) must be explicitly tested
+
+- [ ] **Documentation Updated:** 
+  - Code comments are thorough and explain the *why* (not just the *what*)
+  - If mechanics change, [`README.md`](./README.md) is updated to reflect truth
+
+- [ ] **Provenance Compliance:** (If applicable)
+  - All literary citations include stable public-domain archive links
+  - No modern copyrighted translations or proprietary brand assets are included
+
+- [ ] **IP Compliance Signed-Off:**
+  - ✅ No commercial brand artwork (Diary of Death's Daughter, Source Code apparel, etc.)
+  - ✅ No proprietary narrative IP from Daddy's Little Mortis ecosystem
+  - ✅ Generic or public-domain motifs only
+
+- [ ] **Project Board Updated:** The corresponding GitHub Project Board card has been moved to **In Review**
+
+### PR Template
+
+When opening a pull request, use the following template in your PR description:
+
+```markdown
+## 🎯 Purpose
+[Brief description of what this PR accomplishes]
+
+## 📋 Related Issue
+Closes #[issue-number] (if applicable)
+
+## 🧪 Testing
+- [ ] Unit tests added/updated
+- [ ] Manual testing completed
+- [ ] Edge cases verified
+
+## ♟️ Mechanical Changes (If Applicable)
+[If this PR modifies game rules, explicitly explain:]
+- Movement rules affected
+- State machine changes
+- Aura/resource interactions
+
+## 📚 Documentation
+- [ ] README.md updated (if mechanics changed)
+- [ ] Code comments thorough
+- [ ] Provenance links included (if literary references)
+
+## ✅ Compliance Checklist
+- [ ] Code compiles without errors
+- [ ] All tests pass
+- [ ] No commercial IP included
+- [ ] Public domain provenance documented
+- [ ] CC BY-NC-SA 4.0 compliance confirmed
 ```
-/docs
-├── /design
-│   ├── GDD.md (This document)
-│   ├── MECHANICS.md (Detailed mechanical breakdowns)
-│   └── WORLD_LORE.md (Thematic elements)
-├── /technical
-│   ├── ARCHITECTURE.md (System design diagrams)
-│   └── API.md (If applicable)
-├── /contributing
-│   ├── ONBOARDING.md (Setup guide)
-│   └── WORKFLOW.md (Development process)
-└── /assets
-    └── ASSET_LIST.md (Required art/audio)
+
+---
+
+## 📊 5. GitHub Project Board Structure
+
+All development activity flows through our GitHub Project Board using this status pipeline:
+
+```
+┌──────────┐    ┌─────────┐    ┌──────────────┐    ┌───────────┐    ┌──────────┐
+│ 📥 Triage│ ─→ │📋 Ready │ ─→ │ ⚙️ In Progress│ ─→ │🔍 Review │ ─→ │✅ Merged │
+└──────────┘    └─────────┘    └──────────────┘    └───────────┘    └──────────┘
 ```
 
-This structure follows GitHub's documentation best practices 【turn0search3】 and the patterns seen in successful game repositories 【turn0search2】, while providing clear pathways for contributors to find information and get involved with the project.
+### Column Definitions
+
+| Column | Purpose | Who Acts | Next Step |
+|--------|---------|----------|-----------|
+| **📥 Triage** | New feature requests, architectural discussions, long-term roadmap items. | Maintainers | Scoped & prioritized into **Ready** |
+| **📋 Ready** | Well-defined, scoped tasks ready to claim. May include `good-first-issue` or `help-wanted` labels. | Contributors | Comment to request assignment, create feature branch |
+| **⚙️ In Progress** | Active development. Issue should be assigned to you. Only one person per issue to avoid duplication. | Assigned Dev | Push commits, open PR when complete |
+| **🔍 Review** | Pull request is open and awaiting code review. | Maintainers + Community | Address feedback, iterate on branch |
+| **✅ Merged** | PR approved and merged to `main`. Archived for reference. | Maintainers | Celebrate! 🎉 |
+
+### Rules
+
+* **Never start work on an issue unless it's assigned to you.** Comment on the issue card first to request assignment.
+* **Communicate blockers early.** If you're stuck, move the card back to **Ready** or comment with details so another contributor can help.
+* **Link your PR to the issue.** Include `Closes #[issue-number]` in your PR description.
+
+---
+
+## 🤝 6. Community Guidelines & Conduct
+
+### Be Respectful
+This is a collaborative game design and engineering community. We value:
+- Constructive feedback
+- Curiosity about game mechanics
+- Patience with diverse skillsets
+- Giving credit generously
+
+### No Toxic Behavior
+We will not tolerate:
+- Personal attacks or harassment
+- Gatekeeping or elitism
+- Dismissive language toward contributors
+- Spam or commercial promotion
+
+Any violation will result in immediate contributor removal and potential GitHub reporting.
+
+### Asking for Help
+This project welcomes questions. If you're stuck:
+1. Check the [`docs/DEVELOPMENT_ENVIRONMENT.md`](./docs/DEVELOPMENT_ENVIRONMENT.md) guide first.
+2. Search open and closed issues for similar problems.
+3. Comment on the issue card with your specific blocker.
+4. Email **questions@loptrlab.com** if you need urgent support.
+
+---
+
+## 📬 7. Contact & Escalation
+
+### For Contribution Questions
+- **GitHub Issues:** Open an issue with the `question` label
+- **Email:** questions@loptrlab.com
+- **Include:** Your GitHub handle, what you're working on, and what help you need
+
+### For Commercial Licensing or Brand Partnerships
+- **Email:** questions@loptrlab.com
+- **Include:** Your project scope, timeline, and proposed terms
+
+### For Security Vulnerabilities
+- **Do NOT open a public issue.** Email security@loptrlab.com with details.
+- We will investigate and patch before public disclosure.
+
+---
+
+## ✨ Recognition
+
+Contributors who land merged PRs will be:
+- Added to the **CONTRIBUTORS.md** file (coming soon)
+- Credited in release notes
+- Invited to our Discord/community spaces for ongoing collaboration
+
+Thank you for helping build the future of constraint-based game design. 🎮♟️
+
+---
+
+**Last Updated:** 2026-07-01  
+**Maintained by:** Loptr Lab (@ibloud)  
+**License:** CC BY-NC-SA 4.0
