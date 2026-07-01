@@ -1,0 +1,32 @@
+{
+  "name": "Veiled Dominion Dev Sandbox",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:8.0",
+  "features": {
+    "ghcr.io/devcontainers/features/node-javascript:1": {
+      "nodeVersion": "20"
+    }
+  },
+  "postCreateCommand": "dotnet restore && npm install --prefix ./src/network/atproto-layer",
+  "waitFor": "onCreateCommand",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "davidanson.vscode-markdownlint",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "ms-vscode.makefile-tools"
+      ],
+      "settings": {
+        "omnisharp.useModernNet": true,
+        "[csharp]": {
+          "editor.formatOnSave": true,
+          "editor.defaultFormatter": "ms-dotnettools.csharp"
+        }
+      }
+    }
+  },
+  "forwardPorts": [5000, 5001],
+  "remoteUser": "vscode",
+  "mounts": []
+}
